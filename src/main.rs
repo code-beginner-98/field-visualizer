@@ -22,7 +22,9 @@ impl Default for App
     fn default() -> Self
     {
         Self {
-            charges: Vec::new(),
+            charges: vec![
+                Charge::new(2.7, 5.8, 0)
+            ],
             grid_size: 50
         }
     }
@@ -46,14 +48,14 @@ impl eframe::App for App
                     painter_proportions * (self.grid_size as f32)),
                 response.rect
             );
+            let from_screen = to_screen.inverse();
 
-            // invoke charges
-            self.charges = vec![Charge::new(4.7, 5.8, 0)];
-            
+            // invoke charges (not necessary, see Default())
+
             // draw charges
             for charge in &mut self.charges
             {
-                Self::draw_draggable_charge(ui, charge);
+                Self::draw_draggable_charge(ui, charge, to_screen, from_screen);
             }
             
             // invoke arrows
@@ -87,6 +89,7 @@ impl App
     {
         Default::default()
     }
+
     fn draw_arrows(&self, arrow: Arrow, painter: &egui::Painter, to_screen: RectTransform)
     {
         // find direction of force, normalize (unit vector)
@@ -94,23 +97,23 @@ impl App
         let unit_vec = distance_vec.normalized();
 
         // find force vector
-        // currently missing PI*EPSILON ni first term.
-        let factor = 4.; // emphasizing factor, otherwise small
+        // currently missing PI*EPSILON in first term.
+        let factor = 4.; // emphasizing factor, otherwise small. Maybe use log?
         let force = factor * (1./(4.))*(1./(distance_vec.length()*distance_vec.length()))*unit_vec;
 
         painter.arrow(
             to_screen * arrow.origin,
             to_screen.scale() * force,
-            Stroke::new(1.0, Color32::RED)
+            Stroke::new(1.0, Color32::YELLOW)
         );
     }
 
-    fn draw_draggable_charge(ui: &mut Ui, charge: &mut Charge)
+    fn draw_draggable_charge(ui: &mut Ui, charge: &mut Charge, to_screen: RectTransform, from_screen: RectTransform)
     {
         let radius = 6.;
         let id = egui::Id::new(charge.id);
         let rect = egui::Rect::from_center_size(
-            charge.position,
+            to_screen.transform_pos(charge.position),
             Vec2::splat(radius * 2.)
         );
 
@@ -120,12 +123,12 @@ impl App
         {
             if let Some(pos) = response.interact_pointer_pos()
             {
-                charge.position = pos;
+                charge.position = from_screen.transform_pos(pos);
             }
         }
 
         let painter = ui.painter();
-        painter.circle_filled(charge.position, radius, egui::Color32::BLUE);
+        painter.circle_filled(to_screen.transform_pos(charge.position), radius, egui::Color32::RED);
     }
 }
 
