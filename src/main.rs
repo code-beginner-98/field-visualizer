@@ -25,7 +25,7 @@ impl eframe::App for VisApp
     {
         egui::CentralPanel::default().show(&ctx, |ui|
         {
-            ui.label("Hello, world!")
+            ui.label("Hello, world!");
         });
     }
 }
