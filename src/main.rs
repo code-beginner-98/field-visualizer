@@ -27,7 +27,22 @@ impl eframe::App for VisApp
     {
         egui::CentralPanel::default().show(&ctx, |ui|
         {
-            // ui.label("Hello, world!");
+            // invoke arrows
+            let mut arrow_map: Vec<Vec<Arrow>> = Vec::new();
+            for y in 0..4
+            {
+                let mut row: Vec<Arrow> = Vec::new();
+                for x in 0..10
+                {
+                    row.push(Arrow::new(Pos2::new(x as f32, y as f32)));
+                }
+                arrow_map.push(row);
+            }
+
+            // invokes charges
+            let charge = Charge::new(1.6, 2.3);
+
+            // prepare painting area, normalize to fit all arrows
             let (response, painter) = ui.allocate_painter(
                 ui.available_size_before_wrap(),
                 Sense::drag()
@@ -36,21 +51,30 @@ impl eframe::App for VisApp
             let to_screen = RectTransform::from_to(
                 Rect::from_min_size(
                     Pos2::ZERO,
-                    painter_proportions),
-                response.rect,);
-            let arrow = Arrow::new(Pos2::new(0.5, 0.25));
-            let charge = Charge::new(0.0, 0.0);
-            let arrow_direction = arrow.origin - charge.position;
+                    painter_proportions * (arrow_map.len() as f32)),
+                response.rect
+            );
+
+            // paint charges
             painter.circle(
                 charge.position,
                 1.,
                 Color32::RED,
                 Stroke::new(1.0, Color32::RED));
-            painter.arrow(
-                to_screen * arrow.origin,
-                to_screen.scale() * arrow_direction,
-                Stroke::new(1.0, Color32::RED)
-            );
+
+            // paint arrows
+            for arrow_row in arrow_map
+            {
+                for arrow in arrow_row
+                {
+                    let arrow_direction = arrow.origin - charge.position;
+                    painter.arrow(
+                        to_screen * arrow.origin,
+                        to_screen.scale() * arrow_direction,
+                        Stroke::new(1.0, Color32::RED)
+                    );
+                }
+            }
         });
     }
 }
