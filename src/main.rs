@@ -1,6 +1,4 @@
-use std::default;
-
-use egui::{emath::RectTransform, Color32, Pos2, Rect, Sense, Stroke, Vec2};
+use egui::{emath::RectTransform, Color32, Pos2, Rect, Sense, Stroke};
 
 fn main() -> eframe::Result<()>
 {
@@ -43,7 +41,11 @@ impl eframe::App for VisApp
             let arrow = Arrow::new(Pos2::new(0.5, 0.25));
             let charge = Charge::new(0.0, 0.0);
             let arrow_direction = arrow.origin - charge.position;
-           painter.circle(charge.position, 1., Color32::RED, Stroke::new(1.0, Color32::RED));
+            painter.circle(
+                charge.position,
+                1.,
+                Color32::RED,
+                Stroke::new(1.0, Color32::RED));
             painter.arrow(
                 to_screen * arrow.origin,
                 to_screen.scale() * arrow_direction,
