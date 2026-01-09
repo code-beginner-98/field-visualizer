@@ -1,4 +1,5 @@
 use egui::{emath::RectTransform, Color32, Pos2, Rect, Sense, Stroke};
+use std::f32::{consts::PI, EPSILON};
 
 fn main() -> eframe::Result<()>
 {
@@ -29,10 +30,11 @@ impl eframe::App for VisApp
         {
             // invoke arrows
             let mut arrow_map: Vec<Vec<Arrow>> = Vec::new();
-            for y in 0..4
+            let grid_size = 25;
+            for y in 0..grid_size
             {
                 let mut row: Vec<Arrow> = Vec::new();
-                for x in 0..10
+                for x in 0..grid_size
                 {
                     row.push(Arrow::new(Pos2::new(x as f32, y as f32)));
                 }
@@ -67,10 +69,18 @@ impl eframe::App for VisApp
             {
                 for arrow in arrow_row
                 {
-                    let arrow_direction = arrow.origin - charge.position;
+                    // find direction of force, normalize (unit vector)
+                    let distance_vec = arrow.origin - charge.position;
+                    let unit_vec = distance_vec.normalized();
+
+                    // find force vector
+                    // currently missing PI*EPSILON ni first term.
+                    let factor = 4.; // emphasizing factor, otherwise small
+                    let force = factor * (1./(4.))*(1./(distance_vec.length()*distance_vec.length()))*unit_vec;
+
                     painter.arrow(
                         to_screen * arrow.origin,
-                        to_screen.scale() * arrow_direction,
+                        to_screen.scale() * force,
                         Stroke::new(1.0, Color32::RED)
                     );
                 }
